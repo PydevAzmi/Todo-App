@@ -2,9 +2,25 @@
 const Task = require("../model/Tasks");
 
 module.exports.getTasks = async (req, res) => {
+    const completed = req.query.completed;
+    console.log(completed);
     try {
-        const tasks = await Task.find();
-        res.status(200).json(tasks);
+
+        if (completed==="true"){
+            const tasks = await Task.find({is_done: true});
+            res.status(200).json(tasks);
+            return;
+        }
+        else if (completed==="false") {
+            const tasks = await Task.find({is_done: false});
+            res.status(200).json(tasks);
+            return;
+        }
+        else {
+            const tasks = await Task.find();
+            res.status(200).json(tasks);
+            return;
+        }
     } catch (error) {
         res.status(500).json({message: error.message});
     }
