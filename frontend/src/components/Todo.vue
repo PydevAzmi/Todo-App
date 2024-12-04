@@ -1,9 +1,9 @@
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, onUpdated } from "vue";
 import { useToast } from "vue-toastification";
 import axios from "axios";
 const Toast = useToast();
-
+const completedTasks = ref(true);
 const newTask = ref("");
 const tasks = ref([]);
 
@@ -26,17 +26,28 @@ const editTask = async (taskId) => {
     const updatedTask = {
         is_done: task.is_done
     }
-    const updated = await axios.post(`http://localhost:8000/tasks/${taskId}`, updatedTask);
+    const updated = await axios.post(`/api/tasks/${taskId}`, updatedTask);
     task.is_done = updated.data.is_done;
     Toast.success("Task Updated successfully");
 
 };
 
 const deleteTask = async (taskId) => {
-    await axios.delete(`http://localhost:8000/tasks/${taskId}`);
+    await axios.delete(`/api/tasks/${taskId}`);
     tasks.value = tasks.value.filter((task) => task._id !== taskId);
     Toast.success("Task deleted successfully");
 };
+
+const toggleCompleted = async () => {
+  completedTasks.value = !completedTasks.value;
+  const response = await axios.get(`/api/tasks/?completed=${completedTasks.value}`);
+  tasks.value = response.data;
+}
+
+const allTasks = async () => {
+    const response = await axios.get("/api/tasks/");
+    tasks.value = response.data;
+}
 
 onMounted(async () => {
   try {
@@ -50,8 +61,8 @@ onMounted(async () => {
   }
 });
 
-</script>
 
+</script>
 <template>
   <div class="container">
     <header class="header">
@@ -70,9 +81,8 @@ onMounted(async () => {
       </form>
 
       <div class="todo-filters">
-        <button class="filter-btn active">All</button>
-        <button class="filter-btn">Pending</button>
-        <button class="filter-btn">Completed</button>
+        <button @click.prevent="allTasks" class="filter-btn">All</button>
+        <button @click.prevent="toggleCompleted" class="filter-btn">{{ completedTasks ? 'Pending' : "Completed" }}</button>
       </div>
 
       <ul class="todo-list">
