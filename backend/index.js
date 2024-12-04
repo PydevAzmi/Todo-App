@@ -1,6 +1,8 @@
 const http = require('http');
 const dotenv = require('dotenv');
 const express = require('express');
+const taskRoutes = require('./src/routes/taskRoutes');
+
 require('./src/config/dbConnect').connect();
 
 dotenv.config();
@@ -9,13 +11,8 @@ const app = express();
 // Middleware
 app.use(express.json());
 
-// View engine
-app.set('view engine', 'ejs');
-
 // routes
-app.get('/' ,(req, res)=>{
-    res.status(200).json({message: "Welcome to the API"});
-})
+app.use('/tasks', taskRoutes);
 
 // Server
 const server = http.createServer(app);
